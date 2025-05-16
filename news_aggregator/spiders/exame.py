@@ -11,12 +11,22 @@ class ExameSpider(scrapy.Spider):
     iterator = "iternodes"
     itertag = "item"
 
+    search_str_array = [
+        "energia",
+        "eletrica",
+        "eletrico",
+        "saneamento",
+        "sabesp",
+        "cemig",
+        "eletrobras",
+    ]
+
     def __init__(self, search_str=None, start_url=None, *args, **kwargs):
         super(ExameSpider, self).__init__(*args, **kwargs)
         self.end_date = datetime.combine(datetime.now(), time.min)
         self.start_date = datetime.combine(datetime.now() - timedelta(days=1), time.min)
 
-        self.search_str_array = [s.lower() for s in search_str.split(',')]
+        if search_str: self.search_str_array = [s.lower() for s in search_str.split(',')]
 
     def parse(self, response):
         response.selector.register_namespace("ns", "http://www.sitemaps.org/schemas/sitemap/0.9")
@@ -36,7 +46,6 @@ class ExameSpider(scrapy.Spider):
         paragraphs_str = ' '.join(paragraphs)
 
         for search_str in self.search_str_array:
-            print(search_str)
             if search_str in paragraphs_str.lower():
                 title = response.css('div[data-js=hero-container] h1.headline-large::text').get()
                 

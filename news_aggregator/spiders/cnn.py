@@ -10,13 +10,22 @@ class CnnSpider(scrapy.Spider):
     start_urls = ["https://www.cnnbrasil.com.br/?s=fiscal"]
 
     page = 1
-    search_str = ""
+    search_str_array = [
+        "energia",
+        "eletrica",
+        "eletrico",
+        "saneamento",
+        "sabesp",
+        "cemig",
+        "eletrobras",
+    ]
 
     def __init__(self, date=None, search_str=None, start_url=None, *args, **kwargs):
         super(CnnSpider, self).__init__(*args, **kwargs)
-        if search_str: self.search_str = search_str
         self.start_date = datetime.combine(datetime.now() - timedelta(days=1), time.min)
         self.end_date = datetime.combine(datetime.now(), time.min)
+
+        if search_str: self.search_str_array = [s.lower() for s in search_str.split(',')]
 
     def err_request(self, failure):
         print("ERROR ON REQUEST")
@@ -42,7 +51,8 @@ class CnnSpider(scrapy.Spider):
         return datetime(day=day, month=month, year=year)
 
     def start_requests(self):
-        yield scrapy.Request(self.gen_url(), callback=self.parse, errback=self.err_request)
+        for search_str in self.search_str_array:
+            yield scrapy.Request(self.gen_url(search_str), callback=self.parse, errback=self.err_request)
 
     def parse(self, response):
         news = response.css('ul.home__new li.home__list__item')
@@ -71,5 +81,9 @@ class CnnSpider(scrapy.Spider):
 
         if continue_search:
             self.page += 1
-            yield scrapy.Request(self.gen_url(), callback=self.parse, errback=self.err_request)
+            for search_str in self.search_str_array:
+                if not (search_str in response.url): continue
+
+                yield scrapy.Request(self.gen_url(search_str), callback=self.parse, errback=self.err_request)
+                break
  

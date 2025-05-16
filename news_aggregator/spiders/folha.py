@@ -3,8 +3,6 @@ from scrapy.spidermiddlewares.httperror import HttpError
 
 from news_aggregator.items import NewsItem
 
-# Add https://www1.folha.uol.com.br/mercado/#90
-
 class FolhaSpider(scrapy.Spider):
     name = "folha"
 
@@ -37,14 +35,24 @@ class FolhaSpider(scrapy.Spider):
     }
 
     links_list = []
+    search_str_array = [
+        "energia",
+        "eletrica",
+        "eletrico",
+        "saneamento",
+        "sabesp",
+        "cemig",
+        "eletrobras",
+    ]
 
     def __init__(self, start_date=None, end_date=None, search_str=None, start_url=None, *args, **kwargs):
         super(FolhaSpider, self).__init__(*args, **kwargs)
 
-        if search_str: self.search_str = search_str
+        if search_str: self.search_str_array = [s.lower() for s in search_str.split(',')]
 
-    def generate_url(self):
-        url = f'https://search.folha.uol.com.br/search?q={self.search_str}&periodo=24&sd=&sd=&ed=&ed=&site=todos'
+
+    def generate_url(self, search_str):
+        url = f'https://search.folha.uol.com.br/search?q={search_str}&periodo=24&sd=&sd=&ed=&ed=&site=todos'
         return url
 
     def err_request(self, failure):
@@ -57,7 +65,9 @@ class FolhaSpider(scrapy.Spider):
             self.logger.error("HttpError on %s", response.url)
 
     def start_requests(self):
-        yield scrapy.Request(self.generate_url(), callback=self.parse, errback=self.err_request)
+        for search_str in self.search_str_array:
+            yield scrapy.Request(self.generate_url(search_str), callback=self.parse, errback=self.err_request)
+        
         yield scrapy.Request('https://www1.folha.uol.com.br/mercado/#100', callback=self.parse, errback=self.err_request)
         
     def parse(self, response):

@@ -12,13 +12,22 @@ class GloboSpider(scrapy.Spider):
     itertag = "item"
 
     page = 1
+    search_str_array = [
+        "energia",
+        "eletrica",
+        "eletrico",
+        "saneamento",
+        "sabesp",
+        "cemig",
+        "eletrobras",
+    ]
 
     def __init__(self, search_str=None, start_url=None, *args, **kwargs):
         super(GloboSpider, self).__init__(*args, **kwargs)
         self.end_date = datetime.combine(datetime.now().replace(tzinfo=None), time.min)  
         self.start_date = datetime.combine(datetime.now().replace(tzinfo=None) - timedelta(days=7), time.min)
 
-        self.search_str_array = [s.lower() for s in search_str.split(',')]
+        if search_str: self.search_str_array = [s.lower() for s in search_str.split(',')]
 
     def err_request(self, failure):
         print("Error on Request")

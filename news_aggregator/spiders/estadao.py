@@ -16,22 +16,33 @@ class EstadaoSpider(scrapy.Spider):
     base_url = 'https://www.estadao.com.br'
     d = ''
 
+    search_str_array = [
+        "energia",
+        "eletrica",
+        "eletrico",
+        "saneamento",
+        "sabesp",
+        "cemig",
+        "eletrobras",
+    ]
+
     def __init__(self, search_str=None, start_url=None, *args, **kwargs):
         super(EstadaoSpider, self).__init__(*args, **kwargs)
-        # end_date = datetime.now()
         start_date = datetime.now() - timedelta(days=1)
 
         self.start_date = f'{start_date.day if (start_date.day) >= 10 else f"0{start_date.day}"}/{start_date.month if (start_date.month) >= 10 else f"0{start_date.month}"}/{start_date.year}'  
-        # self.end_date = f'{end_date.day if end_date.day >= 10 else f"0{end_date.day}"}/{end_date.month if end_date.month >= 10 else f"0{end_date.month}"}/{end_date.year}'
-        if search_str: self.search_str = search_str
+        
+        # if search_str: self.search_str = search_str
+        if search_str: self.search_str_array = [s.lower() for s in search_str.split(',')]
 
-    def generate_api_url(self):
+
+    def generate_api_url(self, search_str):
         inner_params = {
             "mode": "api",
             "size": self.size,
             "from": self.off,
             "sort": "date",
-            "search_text": self.search_str,
+            "search_text": search_str,
             "date_range": f"{self.start_date},{self.start_date}"
         }
         inner_params_str = json.dumps(inner_params, separators=(",", ":"))
@@ -91,12 +102,10 @@ class EstadaoSpider(scrapy.Spider):
             d_value = query_params.get('d', [None])[0]
 
             self.d = d_value
-            
-            print(self.d)
 
-            url = self.generate_api_url()
-
-            yield scrapy.Request(url, callback=self.parse)
+            for search_str in self.search_str_array:
+                url = self.generate_api_url(search_str)
+                yield scrapy.Request(url, callback=self.parse)
 
     def parse(self, response):
         try:
@@ -110,9 +119,14 @@ class EstadaoSpider(scrapy.Spider):
             
             if len(data["content_elements"]) == self.size:
                 self.off += self.size
-                url = self.generate_api_url()
+
+                for search_str in self.search_str_array:
+                    if not (search_str in response.url): continue
+
+                    url = self.generate_api_url(search_str)                
+                    yield scrapy.Request(url, callback=self.parse_api, errback=self.err_request)
+                    break
                 
-                yield scrapy.Request(url, callback=self.parse_api, errback=self.err_request)
         except Exception as e:
             print("ERROR ON PARSE API: ", response.url)
             print(e)
