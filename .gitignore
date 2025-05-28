@@ -1,1 +1,8 @@
 .env
+venv/
+.csv
+.json
+.txt
+news_aggregator/__pycache__/
+news_aggregator/spiders/__pycache__/
+__pycache/

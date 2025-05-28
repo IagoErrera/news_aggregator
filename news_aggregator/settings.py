@@ -98,4 +98,8 @@ AUTOTHROTTLE_START_DELAY = 5
 
 # Set settings whose default value is deprecated to a future-proof value
 TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
+
+FEED_URI = 'data.csv'
+FEED_FORMAT = 'csv'
+FEED_EXPORT_APPEND = True
 FEED_EXPORT_ENCODING = "utf-8"

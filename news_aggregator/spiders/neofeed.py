@@ -13,7 +13,6 @@ class NeofeedSpider(scrapy.Spider):
         super(NeofeedSpider, self).__init__(*args, **kwargs)
         
         self.date = datetime.combine(datetime.now() - timedelta(days=1), time.min)
-        print(self.date)
 
     def err_request(self, failure):
         print("Error on Request")

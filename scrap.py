@@ -14,6 +14,9 @@ from news_aggregator.spiders.cnn import CnnSpider
 from news_aggregator.spiders.canalenergia import CanalenergiaSpider
 from news_aggregator.spiders.neofeed import NeofeedSpider
 from news_aggregator.spiders.megawhat import MegawhatSpider
+from news_aggregator.spiders.poder360 import Poder360Spider
+from news_aggregator.spiders.bloomberglinea import BloomberglineaSpider
+from news_aggregator.spiders.em import EmSpider
 
 from send_email import send_email, fix_data
 
@@ -33,6 +36,9 @@ process.crawl(CnnSpider)
 process.crawl(CanalenergiaSpider)
 process.crawl(NeofeedSpider)
 process.crawl(MegawhatSpider)
+process.crawl(Poder360Spider)
+process.crawl(BloomberglineaSpider)
+process.crawl(EmSpider)
 process.start()
 
 load_dotenv()
